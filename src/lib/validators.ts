@@ -8,7 +8,7 @@ export const applicationSchema = z.object({
 })
 
 export const decisionSchema = z.object({
-  decision: z.union([z.literal('approve'), z.literal('reject')])
+  decision: z.union([z.literal('aprovado'), z.literal('rejeitado')])
 })
 
 export const inviteAcceptSchema = z.object({
