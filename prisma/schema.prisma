@@ -1,0 +1,156 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "sqlite"
+    url      = env("DATABASE_URL")
+}
+
+enum ApplicationStatus {
+    pendente
+    aprovado
+    rejeitado
+}
+
+enum MemberStatus {
+    convidado
+    ativo
+    inativo
+    rejeitado
+}
+
+enum CheckinStatus {
+    presente
+    ausente
+    atrasado
+}
+
+enum ReferralStatus {
+    enviado
+    em_negociacao
+    fechado
+    perdido
+}
+
+enum PaymentStatus {
+    pendente
+    pago
+    falhou
+}
+
+model Application {
+    id          String            @id @default(uuid())
+    name        String
+    email       String
+    company     String?
+    motivation  String
+    status      ApplicationStatus @default(pendente)
+    submittedAt DateTime          @default(now())
+    processedBy String?
+    processedAt DateTime?
+    invite      Invite?
+
+    @@index([email])
+}
+
+model Invite {
+    id            String      @id @default(uuid())
+    application   Application @relation(fields: [applicationId], references: [id])
+    applicationId String      @unique
+    token         String      @unique
+    expiresAt     DateTime
+    used          Boolean     @default(false)
+    createdAt     DateTime    @default(now())
+}
+
+model Member {
+    id                String           @id @default(uuid())
+    name              String
+    email             String           @unique
+    company           String?
+    role              String?
+    status            MemberStatus     @default(convidado)
+    createdAt         DateTime         @default(now())
+    updatedAt         DateTime         @updatedAt
+    profile           Profile?
+    referralsFrom     Referral[]       @relation("from")
+    referralsTo       Referral[]       @relation("to")
+    payments          Payment[]
+    meetings          Meeting[]
+    checkins          Checkin[]
+    thankYousGiven    ThankYouRecord[] @relation("givenByRelation")
+    thankYousReceived ThankYouRecord[] @relation("forMemberRelation")
+}
+
+model Profile {
+    id        String   @id @default(uuid())
+    member    Member   @relation(fields: [memberId], references: [id])
+    memberId  String   @unique
+    bio       String?
+    phone     String?
+    linkedin  String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model Meeting {
+    id          String    @id @default(uuid())
+    title       String
+    date        DateTime
+    location    String?
+    description String?
+    organizer   Member    @relation(fields: [organizerId], references: [id])
+    organizerId String
+    checkins    Checkin[]
+}
+
+model Checkin {
+    id        String        @id @default(uuid())
+    meeting   Meeting       @relation(fields: [meetingId], references: [id])
+    meetingId String
+    member    Member        @relation(fields: [memberId], references: [id])
+    memberId  String
+    status    CheckinStatus
+    checkedAt DateTime      @default(now())
+}
+
+model Referral {
+    id             String           @id @default(uuid())
+    from           Member           @relation("from", fields: [fromMemberId], references: [id])
+    fromMemberId   String
+    to             Member           @relation("to", fields: [toMemberId], references: [id])
+    toMemberId     String
+    contactName    String
+    contactCompany String?
+    details        String
+    status         ReferralStatus   @default(enviado)
+    createdAt      DateTime         @default(now())
+    updatedAt      DateTime         @updatedAt
+    thankYous      ThankYouRecord[]
+}
+
+model ThankYouRecord {
+    id              String    @id @default(uuid())
+    givenBy         Member    @relation("givenByRelation", fields: [givenByMemberId], references: [id])
+    givenByMemberId String
+    forMember       Member    @relation("forMemberRelation", fields: [forMemberId], references: [id])
+    forMemberId     String
+    referral        Referral? @relation(fields: [referralId], references: [id])
+    referralId      String?
+    note            String?
+    createdAt       DateTime  @default(now())
+}
+
+model Payment {
+    id          String        @id @default(uuid())
+    member      Member        @relation(fields: [memberId], references: [id])
+    memberId    String
+    periodStart DateTime
+    periodEnd   DateTime
+    amount      Float
+    status      PaymentStatus @default(pendente)
+    invoiceRef  String?
+    createdAt   DateTime      @default(now())
+    updatedAt   DateTime      @updatedAt
+}
