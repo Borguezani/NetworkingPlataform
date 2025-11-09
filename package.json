@@ -10,7 +10,9 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev --name init",
     "prisma:studio": "prisma studio",
-    "prisma:format": "prisma format"
+    "prisma:format": "prisma format",
+    "test": "jest --passWithNoTests",
+    "test:watch": "jest --watch"
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",
@@ -36,6 +38,7 @@
     "jest": "^30.2.0",
     "tailwindcss": "^4",
     "ts-jest": "^29.4.5",
-    "typescript": "^5"
+    "typescript": "^5",
+    "@types/jest": "^29.5.4"
   }
 }
