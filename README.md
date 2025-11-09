@@ -1,36 +1,110 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Networking Platform
 
-## Getting Started
+Um projeto de exemplo em Next.js (App Router) que implementa um fluxo de admissão de membros com backend em Prisma (SQLite por padrão), formulários React, e um painel de performance.
 
-First, run the development server:
+O objetivo deste repositório é demonstrar um fluxo completo: aplicação → decisão (admin) → convite → cadastro completo, além de componentes auxiliares (indicações, registros de obrigado, pagamentos fictícios) e um dashboard de performance.
+
+---
+
+## Estrutura rápida
+
+- `src/app` — arquivos do Next.js (App Router): páginas, rotas de API e layout.
+- `src/components` — componentes React (forms, tabelas, dashboard).
+- `src/lib` — utilitários compartilhados (Prisma client, validadores zod).
+- `prisma` — schema e migrations do Prisma.
+
+---
+
+## Comandos principais
+
+Siga esta ordem para preparar e rodar o projeto localmente.
+
+
+0) Clonar o projeto
+
+```bash
+git clone https://github.com/Borguezani/NetworkingPlataform.git
+```
+
+1) Instalar dependências
+
+```bash
+npm install
+```
+
+2) Criar arquivo de ambiente
+
+Copie `.env.example` para `.env` e ajuste se necessário:
+
+```bash
+cp .env.example .env
+```
+
+3) Gerar Prisma Client e aplicar migrations
+
+```bash
+npm run prisma:generate
+npm run prisma:migrate
+```
+
+4) (Opcional) Abrir Prisma Studio para inspecionar o DB
+
+```bash
+npm run prisma:studio
+```
+
+5) Rodar em desenvolvimento
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+6) Build e executar em produção
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build
+npm start
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+7) Testes
 
-## Learn More
+```bash
+npm test
+# modo watch
+npm run test:watch
+```
 
-To learn more about Next.js, take a look at the following resources:
+8) Lint
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run lint
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## Variáveis de ambiente importantes
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `DATABASE_URL` — string de conexão do Prisma (ex.: `file:./dev.db` para SQLite)
+- `ADMIN_SECRET` — secret simples usado pelo dashboard/admin (dev only)
+- `NEXT_PUBLIC_APP_URL` — URL pública da aplicação (opcional)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Defina essas variáveis no `.env` antes de rodar migrations ou iniciar o app.
+
+---
+
+## Dashboard de Performance
+
+Rota privada: `/dashboard`. A visualização usa `react-chartjs-2` para mostrar métricas:
+
+- Número total de membros ativos
+- Total de indicações feitas nos últimos 6 meses (série mensal)
+- Total de "obrigados" registrados nos últimos 6 meses (série mensal)
+
+No ambiente de desenvolvimento a página está protegida por um cookie `admin-secret` que deve conter o valor de `ADMIN_SECRET`.
+
+---
+
+## Observações e boas práticas
+
+- No código usamos enums em português (ex.: `aprovado`, `pendente`) — mantenha o schema Prisma e o código sincronizados.
+- Em produção, substitua a proteção por cookie simples por autenticação real (login/session) e não exponha `ADMIN_SECRET` no frontend.
